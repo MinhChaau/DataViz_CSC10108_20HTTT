@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v6.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="Task1_Viz"></div>
+<script>
+
+    // set the dimensions and margins of the graph
+    const margin = {top: 150, right: 30, bottom: 50, left: 50},
+        width = 1000 - margin.left - margin.right,
+        height = 800 - margin.top - margin.bottom;
+    
+    // append the svg object to the body of the page
+    const svg = d3.select("#Task1_Viz")
+      .append("svg")
+        .attr("width", width + margin.left + margin.right + 1000)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // Parse the Data
+    d3.csv("https://raw.githubusercontent.com/MinhChaau/DataViz_CSC10108_20HTTT/main/Product_Country_Qty_10top.csv").then( function(data) {
+    
+      // List of subgroups = header of the csv files = soil condition here
+      const subgroups = data.columns.slice(1)
+    
+      // List of groups = species here = value of the first column called group 
+      const groups = data.map(d => (d.Product))
+    
+      // Add X axis
+      const x = d3.scaleBand()
+          .domain(groups)
+          .range([0, width])
+          .padding([0.2])
+      svg.append("g")
+        .attr("transform", `translate(0, ${height})`)
+        .call(d3.axisBottom(x).tickSizeOuter(0));
+    
+      // Add Y axis
+      const y = d3.scaleLinear()
+        .domain([0, 6000])  
+        .range([ height, 0 ]);
+      svg.append("g")
+        .call(d3.axisLeft(y));
+    
+      // color palette = one color per subgroup
+      const color = d3.scaleOrdinal()
+        .domain(subgroups)
+        .range(["#FF9999","#660000","#CCCC66", "#CC66CC", "#33FFFF", "#CC6633", "#330099",
+        "#FFCCCC", "#CC0033", "#33FFCC", "#FFFF00", "#FF66FF", "#CCCC00", "#330000", "#333300", 
+        "#336600", "#339900", "#33FF00", "#33FF99", "#CCFFCC", "#3333FF", "#3366CC", "#33CCFF",
+        "#3399CC"])
+    
+      //stack the data? --> stack per subgroup
+      const stackedData = d3.stack()
+        .keys(subgroups)
+        (data)
+    
+       svg.append("text")
+       .attr("transform", "translate(200,-150)")
+       .attr("x", 0)
+       .attr("y", 50)
+       .attr("font-size", "50px")
+       .text("Top 10 products in countries")
+
+      // Show the bars
+      svg.append("g")
+        .selectAll("g")
+        // Enter in the stack data = loop key per key = group per group
+        .data(stackedData)
+        .join("g")
+          .attr("fill", d => color(d.key))
+          .selectAll("rect")
+          // enter a second time = loop subgroup per subgroup to add all rectangles
+          .data(d => d)
+          .join("rect")
+            .attr("x", d => x(d.data.Product))
+            .attr("y", d => y(d[1]))
+            .attr("height", d => y(d[0]) - y(d[1]))
+            .attr("width",x.bandwidth())
+
+          svg.append("text")
+          .attr("class", "x label")
+          .attr("text-anchor", "end")
+          .attr("x", width +100)
+          .attr("y", height)
+            .text("Product name");
+
+            svg.append("text")
+          .attr("class", "y label")
+          .attr("text-anchor", "start")
+          .attr("x", -40)
+          .attr("y", -25)
+          .text("Quantity of product");
+    })
+    </script>

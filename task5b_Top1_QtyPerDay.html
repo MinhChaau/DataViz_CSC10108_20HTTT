@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v6.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="task5b_Viz"></div>
+
+<script>
+    // set the dimensions and margins of the graph
+    const margin = {top: 10, right: 30, bottom: 30, left: 60},
+        width = 800 - margin.left - margin.right,
+        height =600 - margin.top - margin.bottom;
+    
+    // append the svg object to the body of the page
+    const svg = d3.select("#task5b_Viz")
+      .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    //Read the data
+    d3.csv("https://raw.githubusercontent.com/MinhChaau/DataViz_CSC10108_20HTTT/main/WORLD_WAR_2_GLIDERS_ASSTD_DESIGNS_PerDay.csv",
+      // When reading the csv, I must format variables:
+      function(d){
+        return { InvoiceDate : d3.timeParse("%Y-%m-%d")(d.InvoiceDate), QtyPerDay : d.QtyPerDay }
+      }).then(
+      // Now I can use this dataset:
+      function(data) {
+        // Add X axis --> it is a date format
+        const x = d3.scaleTime()
+          .domain(d3.extent(data, d => d.InvoiceDate))
+          .range([ 0, width ]);
+        svg.append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x));
+        // Add Y axis
+        const y = d3.scaleLinear()
+          .domain( [0, 3500])
+          .range([ height, 0 ]);
+        svg.append("g")
+          .call(d3.axisLeft(y));
+        // Add the line
+        svg.append("path")
+          .datum(data)
+          .attr("fill", "none")
+          .attr("stroke", "#69b3a2")
+          .attr("stroke-width", 1.5)
+          .attr("d", d3.line()
+            .x(d => x(d.InvoiceDate))
+            .y(d => y(d.QtyPerDay))
+            )
+        // Add the points
+        svg
+          .append("g")
+          .selectAll("dot")
+          .data(data)
+          .join("circle")
+            .attr("cx", d => x(d.InvoiceDate))
+            .attr("cy", d => y(d.QtyPerDay))
+            .attr("r", 5)
+            .attr("fill", "#69b3a2")
+    })
+    </script>

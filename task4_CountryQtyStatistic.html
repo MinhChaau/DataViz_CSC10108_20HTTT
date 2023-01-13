@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+  <script src="https://d3js.org/d3.v4.js"></script>
+  <div id="task4_Viz"></div>
+  <script>
+        var margin = {top: 10, right: 20, bottom: 70, left: 90},
+            width = 1200 - margin.left - margin.right,
+            height = 600 - margin.top - margin.bottom;
+        var barHeight = 30;
+        var svg = d3.select("#task4_Viz")
+          .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+            .attr("transform",
+                  "translate(" + margin.left + "," + margin.top + ")");
+
+        d3.csv("https://raw.githubusercontent.com/MinhChaau/DataViz_CSC10108_20HTTT/main/Country_ProductQty.csv", function(data) {
+        
+          // X axis
+          var x = d3.scaleLinear()
+            .domain([1, 45000])
+            .range([2, width]);
+          svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("transform", "translate(-10,0)rotate(-35)")
+            .style("text-anchor", "end");
+        
+          // Y axis
+          var y = d3.scaleBand()
+            .range([1, height])
+            .domain(data.map(function(d) { return d.Country;}))
+            .padding(.1)
+
+          svg.append("g")
+            .attr("transform", "translate(-2,0)")
+            .call(d3.axisLeft(y))
+
+          //Bars
+          svg.selectAll("myRect")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("x",  x())
+            .attr("y", function(d) { return y(d.Country); })
+            .attr("width", function(d) { return x(d.Value); })
+            .attr("height", y.bandwidth())
+            .attr("fill", "#69b3a2");
+
+          svg.selectAll("myText")
+            .data(data)
+            .enter()
+            .append("text")
+            .attr("x", function(d){return x(d.Value);})
+            .attr("y", function(d){ return y(d.Country);})
+            .attr("dy", margin.top + 5)
+            .text(function(d){ return d.Value;})
+            .attr("fill", "Black");
+          })
+    </script>
+</html>
